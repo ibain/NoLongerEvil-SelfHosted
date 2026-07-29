@@ -51,6 +51,7 @@ from nolongerevil.integrations.mqtt.helpers import (
     is_eco_mode_enabled,
     is_fan_running,
     nest_mode_to_ha,
+    device_has_fan,
 )
 from nolongerevil.integrations.mqtt.home_assistant_discovery import (
     get_all_discovery_configs,
@@ -588,7 +589,7 @@ class MqttIntegration(BaseIntegration):
         )
 
         # Fan mode - only publish when the device has a fan
-        has_fan = shared_values.get("has_fan", device_values.get("has_fan", False))
+        has_fan = device_has_fan(shared_values, device_values)
         if has_fan:
             fan_mode = get_fan_mode(device_values, shared_values)
             await client.publish(
