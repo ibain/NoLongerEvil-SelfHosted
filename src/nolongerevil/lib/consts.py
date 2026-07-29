@@ -22,9 +22,9 @@ class HaMode(StrEnum):
 class HaFanMode(StrEnum):
     """Home Assistant fan modes.
 
-    Include off so HomeKit Fan Active goes inactive when the blower is idle.
-    HA HomeKit sets Active=1 whenever HVAC is not off and fan_mode != off;
-    publishing auto while idle made the HomeKit fan tile look permanently on.
+    HomeKit nested thermostat fan expects ``auto`` in fan_modes (Target Fan
+    State). Advertise auto/on like upstream Nest MQTT; accept ``off`` as a
+    command alias for auto.
     """
 
     OFF = "off"
@@ -33,13 +33,8 @@ class HaFanMode(StrEnum):
 
     @classmethod
     def all(cls) -> list["HaFanMode"]:
-        """Return HomeKit-friendly modes (off/on). Auto kept for command compat."""
-        return [cls.OFF, cls.ON]
-
-    @classmethod
-    def all_including_auto(cls) -> list["HaFanMode"]:
-        """Return all modes including auto."""
-        return list(cls)
+        """Modes advertised on MQTT climate (HomeKit nested fan)."""
+        return [cls.AUTO, cls.ON]
 
 
 class HaPreset(StrEnum):

@@ -219,8 +219,9 @@ def get_fan_mode(
     """Get current fan mode for Home Assistant / HomeKit display.
 
     Reports ON when the blower is physically running or a fan timer is active.
-    Reports OFF otherwise (not AUTO) so HomeKit Fan Active is inactive while
-    idle — HA HomeKit treats any non-off fan_mode as Active when HVAC is on.
+    Otherwise AUTO (Nest default) so HomeKit keeps Target Fan State / nested
+    fan under the thermostat. Do not report OFF here — HA HomeKit omits or
+    breaks nested fan UI when fan_modes lack auto / state is off-only.
 
     Args:
         device_values: Device object values
@@ -239,7 +240,7 @@ def get_fan_mode(
     if has_fan_timer:
         return HaFanMode.ON
 
-    return HaFanMode.OFF
+    return HaFanMode.AUTO
 
 
 def get_preset_mode(
