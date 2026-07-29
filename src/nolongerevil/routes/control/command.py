@@ -35,7 +35,7 @@ from typing import Any
 
 from aiohttp import web
 
-from nolongerevil.integrations.mqtt.helpers import device_has_fan
+from nolongerevil.utils.device_capabilities import device_has_fan
 from nolongerevil.lib.consts import API_MODE_TO_NEST, ApiMode
 from nolongerevil.lib.logger import get_logger
 from nolongerevil.lib.types import DeviceObject

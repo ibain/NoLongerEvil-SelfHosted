@@ -51,8 +51,8 @@ from nolongerevil.integrations.mqtt.helpers import (
     is_eco_mode_enabled,
     is_fan_running,
     nest_mode_to_ha,
-    device_has_fan,
 )
+from nolongerevil.utils.device_capabilities import device_has_fan
 from nolongerevil.integrations.mqtt.home_assistant_discovery import (
     get_all_discovery_configs,
     get_discovery_removal_topics,

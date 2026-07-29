@@ -12,8 +12,9 @@ homeassistant/climate/nest_02AA01AC/thermostat/config
 from typing import Any
 
 from nolongerevil.integrations.mqtt.consts import MODE_TEMPERATURE_TOPICS
-from nolongerevil.integrations.mqtt.helpers import device_has_fan, get_device_name, nest_mode_to_ha
+from nolongerevil.integrations.mqtt.helpers import get_device_name, nest_mode_to_ha
 from nolongerevil.lib.consts import HaFanMode, HaMode, HaPreset
+from nolongerevil.utils.device_capabilities import device_has_fan
 
 
 def build_climate_discovery_payload(
