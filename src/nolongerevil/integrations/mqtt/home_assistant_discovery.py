@@ -195,10 +195,14 @@ def build_outdoor_temperature_sensor_discovery(serial: str, topic_prefix: str) -
 
 
 def build_eco_switch_discovery(serial: str, topic_prefix: str) -> dict[str, Any]:
-    """Build Home Assistant discovery payload for Eco mode switch."""
+    """Build Home Assistant discovery payload for Eco mode switch.
+
+    This is the HomeKit-exposable control. Distinct from the diagnostic Leaf
+    binary sensor (read-only eco session indicator).
+    """
     return {
         "unique_id": f"nolongerevil_{serial}_eco",
-        "name": "Eco Mode",
+        "name": "Eco",
         "default_entity_id": f"switch.nest_{serial}_eco",
         "device": {"identifiers": [f"nolongerevil_{serial}"]},
         "state_topic": f"{topic_prefix}/{serial}/ha/eco_switch",
@@ -258,16 +262,21 @@ def build_fan_binary_sensor_discovery(serial: str, topic_prefix: str) -> dict[st
 
 
 def build_leaf_binary_sensor_discovery(serial: str, topic_prefix: str) -> dict[str, Any]:
-    """Build Home Assistant discovery payload for leaf (eco) binary sensor."""
+    """Build Home Assistant discovery payload for leaf (eco active) binary sensor.
+
+    Named "Leaf" (not "Eco Mode") so it does not collide with the Eco switch
+    control in the HA device UI. This sensor is read-only status.
+    """
     return {
         "unique_id": f"nolongerevil_{serial}_leaf",
-        "name": "Eco Mode",
+        "name": "Leaf",
         "default_entity_id": f"binary_sensor.nest_{serial}_leaf",
+        "entity_category": "diagnostic",
         "device": {"identifiers": [f"nolongerevil_{serial}"]},
         "state_topic": f"{topic_prefix}/{serial}/ha/eco",
         "payload_on": "true",
         "payload_off": "false",
-        "device_class": "power",
+        "icon": "mdi:leaf",
         "availability": {
             "topic": f"{topic_prefix}/{serial}/availability",
             "payload_available": "online",
