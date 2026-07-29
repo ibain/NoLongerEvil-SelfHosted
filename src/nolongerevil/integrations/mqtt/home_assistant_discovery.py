@@ -105,6 +105,11 @@ def build_climate_discovery_payload(
         payload["fan_mode_command_topic"] = f"{topic_prefix}/{serial}/ha/fan_mode/set"
         payload["fan_mode_state_topic"] = f"{topic_prefix}/{serial}/ha/fan_mode"
         payload["fan_modes"] = HaFanMode.all()
+        # Blower flag as climate attribute so HA HomeKit FanV2 patch (and
+        # automations) see fan_running on climate state changes.
+        payload["json_attributes_topic"] = (
+            f"{topic_prefix}/{serial}/ha/climate_attributes"
+        )
 
     payload.update(
         {

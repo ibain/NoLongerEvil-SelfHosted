@@ -208,9 +208,9 @@ class TestGetFanMode:
         future_time = int(time.time()) + 3600
         assert get_fan_mode({"fan_timer_timeout": future_time}) == "on"
 
-    def test_fan_on_with_physical_blower(self):
-        """Physical blower reports fan on."""
-        assert get_fan_mode({}, {"hvac_fan_state": True}) == "on"
+    def test_fan_auto_with_physical_blower(self):
+        """Physical blower alone does not change fan policy (stays auto)."""
+        assert get_fan_mode({}, {"hvac_fan_state": True}) == "auto"
 
     def test_fan_auto_with_expired_timer(self):
         """Expired timer reports auto."""

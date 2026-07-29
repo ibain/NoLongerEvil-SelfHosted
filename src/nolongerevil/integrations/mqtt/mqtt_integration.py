@@ -635,11 +635,16 @@ class MqttIntegration(BaseIntegration):
             retain=True,
         )
 
-        # Fan running
+        # Fan running (binary_sensor + climate json_attributes for HomeKit FanV2)
         fan_running = is_fan_running(shared_values)
         await client.publish(
             f"{prefix}/{serial}/ha/fan_running",
             str(fan_running).lower(),
+            retain=True,
+        )
+        await client.publish(
+            f"{prefix}/{serial}/ha/climate_attributes",
+            json.dumps({"fan_running": fan_running}),
             retain=True,
         )
 

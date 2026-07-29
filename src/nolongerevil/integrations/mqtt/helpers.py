@@ -216,22 +216,24 @@ def get_fan_mode(
     device_values: dict[str, Any],
     shared_values: dict[str, Any] | None = None,
 ) -> HaFanMode:
-    """Get current fan mode for Home Assistant / HomeKit display.
+    """Get Nest fan *policy* for Home Assistant / HomeKit Target Fan State.
 
-    Reports ON when the blower is physically running or a fan timer is active.
-    Otherwise AUTO (Nest default) so HomeKit keeps Target Fan State / nested
-    fan under the thermostat. Do not report OFF here — HA HomeKit omits or
-    breaks nested fan UI when fan_modes lack auto / state is off-only.
+    Reports ON only when a fan timer / forced-on policy is active.
+    Otherwise AUTO (Nest default). Physical blower state belongs on
+    ``fan_running`` / ``binary_sensor.nest_*_fan`` — do not fold it into
+    fan_mode or HomeKit Target Fan State jumps to Manual during heat/cool.
+
+    Do not report OFF here — HA HomeKit omits or breaks nested fan UI when
+    fan_modes lack auto / state is off-only.
 
     Args:
         device_values: Device object values
-        shared_values: Shared object values (physical hvac_fan_state)
+        shared_values: Unused; kept for call-site compatibility
 
     Returns:
-        Fan mode
+        Fan mode policy (auto or on)
     """
-    if shared_values and is_fan_running(shared_values):
-        return HaFanMode.ON
+    _ = shared_values  # physical blower published separately as fan_running
 
     now_seconds = int(time.time())
     fan_timeout = device_values.get("fan_timer_timeout", 0)

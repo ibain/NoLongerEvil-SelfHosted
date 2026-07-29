@@ -73,8 +73,9 @@ While thermostat is in **manual eco** and fan **idle**:
 |----------|----------------|------------------------|
 | Manual eco, HVAC idle | preset=away/eco, action=idle, fan=auto | Thermostat OFF |
 | Physically heating in eco | action=heating | Shows heating |
-| Fan blower running | fan_mode=on OR fan_running=true | Fan reflects running |
-| Fan commanded but blower off | fan_mode=auto, fan_running=false | Fan not "on" |
+| Fan blower running | fan_running=true (fan_mode may stay auto) | HomeKit Active On via ha-homekit-nest-fan |
+| Fan policy auto, blower idle | fan_mode=auto, fan_running=false | HomeKit Active Off, Target Auto |
+| Fan timer on | fan_mode=on | HomeKit Target Manual |
 | Manual eco enabled | occupancy=away (aligned) | No contradictory "home occupied on" |
 | Single accessory goal | Only climate + eco switch in HK filter | One Nest thermostat tile + eco toggle |
 | Eco switch On/Off | Matches physical eco | Toggle works from HomeKit |
