@@ -14,7 +14,9 @@ from nolongerevil.integrations.mqtt.helpers import (
     ha_mode_to_nest,
     is_device_away,
     is_eco_active,
+    is_eco_mode_enabled,
     is_fan_running,
+    is_structure_manual_eco,
     nest_mode_to_ha,
 )
 
@@ -150,18 +152,31 @@ class TestDeriveHvacAction:
         shared = {"target_temperature_type": "cool", "hvac_cool_x2_state": True}
         assert derive_hvac_action(device, shared) == "cooling"
 
-    def test_fan_timer_active(self):
-        """Test that active fan timer returns fan."""
+    def test_fan_timer_active_with_physical_fan(self):
+        """Test that active fan timer returns fan only when blower is running."""
         future_time = int(time.time()) + 3600  # 1 hour from now
         device = {"fan_timer_timeout": future_time}
-        shared = {"target_temperature_type": "heat"}
+        shared = {"target_temperature_type": "heat", "hvac_fan_state": True}
         assert derive_hvac_action(device, shared) == "fan"
 
-    def test_fan_control_state(self):
-        """Test that fan control state returns fan."""
+    def test_fan_timer_without_physical_fan_returns_idle(self):
+        """Stale fan timer without blower reports idle."""
+        future_time = int(time.time()) + 3600
+        device = {"fan_timer_timeout": future_time}
+        shared = {"target_temperature_type": "heat"}
+        assert derive_hvac_action(device, shared) == "idle"
+
+    def test_physical_fan_state(self):
+        """Test that physical fan state returns fan."""
+        device = {}
+        shared = {"target_temperature_type": "heat", "hvac_fan_state": True}
+        assert derive_hvac_action(device, shared) == "fan"
+
+    def test_fan_control_state_without_blower_returns_idle(self):
+        """Stale fan_control_state alone does not report fan action."""
         device = {"fan_control_state": True}
         shared = {"target_temperature_type": "heat"}
-        assert derive_hvac_action(device, shared) == "fan"
+        assert derive_hvac_action(device, shared) == "idle"
 
     def test_idle_when_nothing_active(self):
         """Test that idle is returned when no states are active."""
@@ -184,14 +199,18 @@ class TestGetFanMode:
         """Test that auto is returned by default."""
         assert get_fan_mode({}) == "auto"
 
-    def test_fan_on_with_control_state(self):
-        """Test that on is returned with fan_control_state."""
-        assert get_fan_mode({"fan_control_state": True}) == "on"
+    def test_fan_on_with_control_state_requires_physical_or_timer(self):
+        """fan_control_state alone does not force fan on."""
+        assert get_fan_mode({"fan_control_state": True}) == "auto"
 
     def test_fan_on_with_active_timer(self):
         """Test that on is returned with active timer."""
         future_time = int(time.time()) + 3600
         assert get_fan_mode({"fan_timer_timeout": future_time}) == "on"
+
+    def test_fan_on_with_physical_blower(self):
+        """Physical blower reports fan on."""
+        assert get_fan_mode({}, {"hvac_fan_state": True}) == "on"
 
     def test_fan_auto_with_expired_timer(self):
         """Test that auto is returned with expired timer."""
@@ -341,6 +360,28 @@ class TestBooleanStateChecks:
     def test_is_device_away_false_by_default(self):
         """Test is_device_away returns False by default."""
         assert is_device_away({}) is False
+
+    def test_is_device_away_with_structure_manual_eco(self):
+        """Structure manual_eco_all reports away occupancy."""
+        assert is_device_away({}, {"manual_eco_all": True}) is True
+
+    def test_is_eco_mode_enabled_manual_eco(self):
+        """manual-eco eco.mode enables eco session."""
+        assert is_eco_mode_enabled({"eco": {"mode": "manual-eco"}}, {}) is True
+
+    def test_is_eco_mode_enabled_auto_eco(self):
+        """auto-eco eco.mode enables eco session."""
+        assert is_eco_mode_enabled({"eco": {"mode": "auto-eco"}}, {}) is True
+
+    def test_is_eco_mode_enabled_schedule_disabled(self):
+        """schedule eco.mode does not enable eco session."""
+        assert is_eco_mode_enabled({"eco": {"mode": "schedule"}}, {}) is False
+
+    def test_is_structure_manual_eco(self):
+        """manual_eco_all on structure bucket."""
+        assert is_structure_manual_eco({"manual_eco_all": True}) is True
+        assert is_structure_manual_eco({"manual_eco_all": False}) is False
+        assert is_structure_manual_eco(None) is False
 
     def test_is_device_away_with_auto_away(self):
         """Test is_device_away with auto_away."""
