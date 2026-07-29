@@ -1,10 +1,14 @@
 # HA OS Testing — Forked NLE Add-on
 
+**Supported Nest → Apple Home path (this setup):** NLE MQTT add-on → Home Assistant → HA HomeKit Bridge + [`ha-homekit-nest-fan`](https://github.com/ibain/ha-homekit-nest-fan). Do **not** use Homebridge for Nest.
+
+Requires NLE Self-Hosted / add-on **0.0.17+** (policy-only `fan_mode`, eco switch, accurate `fan_running`).
+
 ## Fork repos
 
 - https://github.com/ibain/NoLongerEvil-SelfHosted (`fix/eco-mode-control`)
 - https://github.com/ibain/NoLongerEvil-HomeAssistant (`fix/eco-mode-control`)
-- https://github.com/ibain/homebridge-nolongerevil-nest (`fix/eco-mode-control`)
+- https://github.com/ibain/ha-homekit-nest-fan (HomeKit nested fan patch)
 
 ## Install forked add-on
 
@@ -16,6 +20,13 @@
 6. Restart Mosquitto + forked add-on
 7. **Settings → Devices & Services → MQTT → Configure** → reload if entities stale
 
+## Install ha-homekit-nest-fan
+
+1. Copy `custom_components/ha_homekit_nest_fan` into `/config/custom_components/`  
+   (or HACS custom repo: `https://github.com/ibain/ha-homekit-nest-fan`)
+2. Restart HA → **Add Integration → “HomeKit Nest FanV2 Fix”**
+3. Reload **HomeKit Bridge** so thermostat accessories rebuild with the fan patch
+
 ## HomeKit Bridge filter
 
 Expose:
@@ -26,20 +37,11 @@ Expose:
 Exclude:
 
 - `binary_sensor.nest_*_occupancy`
-- `binary_sensor.nest_*_fan`
+- `binary_sensor.nest_*_fan` (optional if you only want nested fan via `ha-homekit-nest-fan`)
 - `binary_sensor.nest_*_leaf`
 - diagnostic sensors (battery, rssi, etc.)
 
-Long-term: use **one** bridge (HA HomeKit Bridge **or** homebridge-nolongerevil-nest), not both.
-
-## Homebridge fork test
-
-```bash
-cd ~/GitHub-Personal/homebridge-nolongerevil-nest
-git checkout fix/eco-mode-control
-npm install && npm run build
-# Point homebridge config at NLE self-hosted API (same host:9543)
-```
+Use **one** bridge only: HA HomeKit Bridge. Do not pair Nest through Homebridge.
 
 ## Baseline capture (before/after)
 
@@ -50,22 +52,24 @@ While thermostat is in **manual eco** and fan **idle**:
 | HA States | `climate.nest_*`: `hvac_mode`, `hvac_action`, `preset_mode`, `fan_mode` |
 | HA States | `switch.nest_*_eco`, `binary_sensor.nest_*_occupancy`, `_fan`, `_leaf` |
 | MQTT | `nolongerevil/{serial}/ha/preset`, `mode`, `action`, `fan_mode`, `fan_running`, `occupancy`, `eco_switch` |
-| Apple Home | Screenshot thermostat + fan tiles (both bridges if still dual) |
+| Apple Home | Screenshot thermostat + nested fan (HA HomeKit Bridge only) |
 
 ## Hardware checklist
 
 1. Confirm `climate.*` integration = **MQTT** (not patricktr custom)
-2. Confirm `switch.nest_*_eco` exists in entity registry
-3. Record `hvac_mode`, `hvac_action`, `preset_mode`, temps before each test
-4. **Eco switch On** → physical eco activates → switch stays On after refresh
-5. **Eco switch Off** → exit eco → schedule resumes → switch Off
-6. `climate.set_preset_mode` eco then home — both directions work
-7. Add eco switch to HomeKit Bridge; toggle from Apple Home
-8. Arrival automation: `switch.turn_off` on eco switch when person arrives
-9. Automatic eco still activates after manual off (regression)
-10. Fan tile vs `hvac_action` / `fan_running` — fan not "on" when blower idle
-11. Manual eco + HVAC idle → Apple Home thermostat **OFF** (not heating/cooling)
-12. Physically heating in eco → Apple Home shows heating (truthful)
+2. Confirm add-on / Self-Hosted version is **0.0.17+**
+3. Confirm `switch.nest_*_eco` exists in entity registry
+4. Confirm **ha-homekit-nest-fan** integration is loaded
+5. Record `hvac_mode`, `hvac_action`, `preset_mode`, temps before each test
+6. **Eco switch On** → physical eco activates → switch stays On after refresh
+7. **Eco switch Off** → exit eco → schedule resumes → switch Off
+8. `climate.set_preset_mode` eco then home — both directions work
+9. Add eco switch to HomeKit Bridge; toggle from Apple Home
+10. Arrival automation: `switch.turn_off` on eco switch when person arrives
+11. Automatic eco still activates after manual off (regression)
+12. Fan tile vs `hvac_action` / `fan_running` — fan not "on" when blower idle
+13. Manual eco + HVAC idle → Apple Home thermostat **OFF** (not heating/cooling)
+14. Physically heating in eco → Apple Home shows heating (truthful)
 
 ## Acceptance criteria
 
@@ -122,6 +126,7 @@ While thermostat is in **manual eco** and fan **idle**:
 4. Restart Mosquitto
 5. **Settings → Devices & Services → HomeKit Bridge** → reload
 6. Remove stale `switch.nest_*_eco` entities if needed (MQTT discovery cleanup)
+7. Optionally remove `ha_homekit_nest_fan` from `custom_components` and delete the integration
 
 ## After checklist passes
 
