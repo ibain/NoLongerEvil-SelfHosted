@@ -195,13 +195,13 @@ class TestDeriveHvacAction:
 class TestGetFanMode:
     """Tests for get_fan_mode function."""
 
-    def test_fan_auto_by_default(self):
-        """Test that auto is returned by default."""
-        assert get_fan_mode({}) == "auto"
+    def test_fan_off_by_default(self):
+        """Idle fan reports off so HomeKit Active is inactive."""
+        assert get_fan_mode({}) == "off"
 
     def test_fan_on_with_control_state_requires_physical_or_timer(self):
         """fan_control_state alone does not force fan on."""
-        assert get_fan_mode({"fan_control_state": True}) == "auto"
+        assert get_fan_mode({"fan_control_state": True}) == "off"
 
     def test_fan_on_with_active_timer(self):
         """Test that on is returned with active timer."""
@@ -212,10 +212,10 @@ class TestGetFanMode:
         """Physical blower reports fan on."""
         assert get_fan_mode({}, {"hvac_fan_state": True}) == "on"
 
-    def test_fan_auto_with_expired_timer(self):
-        """Test that auto is returned with expired timer."""
+    def test_fan_off_with_expired_timer(self):
+        """Expired timer reports off."""
         past_time = int(time.time()) - 3600
-        assert get_fan_mode({"fan_timer_timeout": past_time}) == "auto"
+        assert get_fan_mode({"fan_timer_timeout": past_time}) == "off"
 
 
 class TestGetPresetMode:

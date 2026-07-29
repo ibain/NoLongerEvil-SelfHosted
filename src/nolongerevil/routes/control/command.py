@@ -35,6 +35,7 @@ from typing import Any
 
 from aiohttp import web
 
+from nolongerevil.integrations.mqtt.helpers import device_has_fan
 from nolongerevil.lib.consts import API_MODE_TO_NEST, ApiMode
 from nolongerevil.lib.logger import get_logger
 from nolongerevil.lib.types import DeviceObject
@@ -205,18 +206,19 @@ async def set_fan(
     shared_obj = state_service.get_object(serial, f"shared.{serial}")
     dv = device_obj.value if device_obj else {}
     sv = shared_obj.value if shared_obj else {}
-    if not sv.get("has_fan", dv.get("has_fan", False)):
+    if not device_has_fan(sv, dv):
         raise CommandError("Device does not have a fan (has_fan=false)")
 
     if isinstance(value, str):
-        if value.lower() == "on":
+        mode = value.lower()
+        if mode == "on":
             # Use stored fan duration preference (default 60 minutes)
             duration_minutes = 60  # default
             if device_obj:
                 duration_minutes = device_obj.value.get("fan_timer_duration_minutes", 60)
             return {"fan_timer_timeout": int(time.time()) + (duration_minutes * 60)}
-        elif value.lower() == "auto":
-            # Turn off fan timer
+        elif mode in ("auto", "off"):
+            # Turn off fan timer (HomeKit/HA "off" maps to Nest auto)
             return {"fan_timer_timeout": 0}
     elif isinstance(value, (int, float)):
         # Set fan timer duration (value is in seconds for backwards compatibility)

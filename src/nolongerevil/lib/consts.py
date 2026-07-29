@@ -20,14 +20,25 @@ class HaMode(StrEnum):
 
 
 class HaFanMode(StrEnum):
-    """Home Assistant fan modes."""
+    """Home Assistant fan modes.
 
+    Include off so HomeKit Fan Active goes inactive when the blower is idle.
+    HA HomeKit sets Active=1 whenever HVAC is not off and fan_mode != off;
+    publishing auto while idle made the HomeKit fan tile look permanently on.
+    """
+
+    OFF = "off"
     AUTO = "auto"
     ON = "on"
 
     @classmethod
     def all(cls) -> list["HaFanMode"]:
-        """Return all fan modes as a list."""
+        """Return HomeKit-friendly modes (off/on). Auto kept for command compat."""
+        return [cls.OFF, cls.ON]
+
+    @classmethod
+    def all_including_auto(cls) -> list["HaFanMode"]:
+        """Return all modes including auto."""
         return list(cls)
 
 

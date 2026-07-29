@@ -242,10 +242,11 @@ def get_fan_mode(
     device_values: dict[str, Any],
     shared_values: dict[str, Any] | None = None,
 ) -> HaFanMode:
-    """Get current fan mode for Home Assistant display.
+    """Get current fan mode for Home Assistant / HomeKit display.
 
     Reports ON when the blower is physically running or a fan timer is active.
-    Ignores stale fan_control_state without an active timer or physical fan.
+    Reports OFF otherwise (not AUTO) so HomeKit Fan Active is inactive while
+    idle — HA HomeKit treats any non-off fan_mode as Active when HVAC is on.
 
     Args:
         device_values: Device object values
@@ -264,7 +265,7 @@ def get_fan_mode(
     if has_fan_timer:
         return HaFanMode.ON
 
-    return HaFanMode.AUTO
+    return HaFanMode.OFF
 
 
 def get_preset_mode(
