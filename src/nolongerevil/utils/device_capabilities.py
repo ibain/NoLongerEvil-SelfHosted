@@ -23,7 +23,5 @@ def device_has_fan(
         or "hvac_fan_state" in shared_values
     ):
         return True
-    if shared_values.get("has_fan") is False or dv.get("has_fan") is False:
-        return False
     # Default on for heat/cool thermostats so HomeKit can nest fan controls.
-    return True
+    return not (shared_values.get("has_fan") is False or dv.get("has_fan") is False)

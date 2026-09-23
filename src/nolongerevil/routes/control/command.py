@@ -35,12 +35,12 @@ from typing import Any
 
 from aiohttp import web
 
-from nolongerevil.utils.device_capabilities import device_has_fan
 from nolongerevil.lib.consts import API_MODE_TO_NEST, ApiMode
 from nolongerevil.lib.logger import get_logger
 from nolongerevil.lib.types import DeviceObject
 from nolongerevil.services.device_state_service import DeviceStateService
 from nolongerevil.services.subscription_manager import SubscriptionManager
+from nolongerevil.utils.device_capabilities import device_has_fan
 from nolongerevil.utils.structure_assignment import derive_structure_id
 from nolongerevil.utils.temperature_safety import (
     get_safety_bounds,

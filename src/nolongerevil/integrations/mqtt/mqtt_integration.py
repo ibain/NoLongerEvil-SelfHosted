@@ -53,7 +53,6 @@ from nolongerevil.integrations.mqtt.helpers import (
     is_fan_running,
     nest_mode_to_ha,
 )
-from nolongerevil.utils.device_capabilities import device_has_fan
 from nolongerevil.integrations.mqtt.home_assistant_discovery import (
     get_all_discovery_configs,
     get_discovery_removal_topics,
@@ -67,6 +66,7 @@ from nolongerevil.lib.consts import HaPreset
 from nolongerevil.lib.logger import get_logger
 from nolongerevil.lib.types import DeviceStateChange, IntegrationConfig
 from nolongerevil.routes.control.command import CommandError, execute_command
+from nolongerevil.utils.device_capabilities import device_has_fan
 
 if TYPE_CHECKING:
     from nolongerevil.services.device_state_service import DeviceStateService

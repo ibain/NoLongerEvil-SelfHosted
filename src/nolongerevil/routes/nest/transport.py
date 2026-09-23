@@ -552,9 +552,7 @@ async def handle_transport_subscribe(request: web.Request) -> web.StreamResponse
                 created_at=datetime.now(),
             )
             await storage.set_device_owner(owner)
-            logger.info(
-                f"Open mode: auto-registered device {serial} to user homeassistant"
-            )
+            logger.info(f"Open mode: auto-registered device {serial} to user homeassistant")
         if owner:
             now_ts = int(time.time() * 1000)
 
@@ -651,16 +649,10 @@ async def handle_transport_subscribe(request: web.Request) -> web.StreamResponse
                         updated_at=datetime.now(),
                     )
                     await state_service.upsert_object(structure_obj)
-                    logger.info(
-                        f"Created default structure bucket for unclaimed device {serial}"
-                    )
+                    logger.info(f"Created default structure bucket for unclaimed device {serial}")
 
                 client_structure = next(
-                    (
-                        o
-                        for o in processed_client_objects
-                        if o.get("object_key") == structure_key
-                    ),
+                    (o for o in processed_client_objects if o.get("object_key") == structure_key),
                     None,
                 )
                 client_struct_ts = (
