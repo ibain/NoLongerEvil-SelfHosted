@@ -46,7 +46,6 @@ from nolongerevil.integrations.mqtt.helpers import (
     derive_hvac_action,
     get_fan_mode,
     get_preset_mode,
-    ha_mode_to_nest,
     is_device_away,
     is_eco_active,
     is_fan_running,
@@ -267,14 +266,12 @@ class MqttIntegration(BaseIntegration):
 
         try:
             if command == "mode":
-                # HA climate publishes heat_cool; Nest uses range/heat-cool.
-                nest_mode = ha_mode_to_nest(payload)
                 await execute_command(
                     self._state_service,
                     self._subscription_manager,
                     serial,
                     "set_mode",
-                    nest_mode,
+                    payload,
                 )
 
             elif command == "target_temperature":

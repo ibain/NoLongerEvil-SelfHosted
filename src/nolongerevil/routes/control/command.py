@@ -126,11 +126,6 @@ async def set_mode(
             "use manual_eco_all in the structure bucket instead."
         )
 
-    # Home Assistant MQTT climate publishes heat_cool (underscore); API/Nest
-    # use heat-cool / range / auto. Accept both so Auto mode commands stick.
-    if mode_str == "heat_cool":
-        mode_str = "heat-cool"
-
     # Convert input string to ApiMode, then lookup NestMode
     try:
         api_mode = ApiMode(mode_str)
