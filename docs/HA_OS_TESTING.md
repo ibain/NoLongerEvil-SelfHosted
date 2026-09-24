@@ -70,6 +70,8 @@ While thermostat is in **manual eco** and fan **idle**:
 12. Fan tile vs `hvac_action` / `fan_running` — fan not "on" when blower idle
 13. Manual eco + HVAC idle → Apple Home thermostat **OFF** (not heating/cooling)
 14. Physically heating in eco → Apple Home shows heating (truthful)
+15. Eco On, then change the setpoint (Apple Home arc, HA, or Nest dial) → thermostat leaves Eco and the eco switch turns Off within seconds
+16. Eco On, then change HVAC mode → record whether the thermostat leaves Eco
 
 ## Acceptance criteria
 
@@ -83,6 +85,7 @@ While thermostat is in **manual eco** and fan **idle**:
 | Manual eco enabled | occupancy=away (aligned) | No contradictory "home occupied on" |
 | Single accessory goal | Only climate + eco switch in HK filter | One Nest thermostat tile + eco toggle |
 | Eco switch On/Off | Matches physical eco | Toggle works from HomeKit |
+| Setpoint changed during Eco | preset=home, eco switch off | Eco switch Off; arc setpoint applies |
 
 ## Sample automations
 
