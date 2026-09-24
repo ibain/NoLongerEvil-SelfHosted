@@ -320,7 +320,8 @@ class MqttIntegration(BaseIntegration):
                         "set_away",
                         True,
                     )
-                elif payload.lower() == HaPreset.HOME:
+                # HA always offers a "none" preset; treat it as leaving Eco.
+                elif payload.lower() in (HaPreset.HOME, "none"):
                     await execute_command(
                         self._state_service,
                         self._subscription_manager,
@@ -335,6 +336,16 @@ class MqttIntegration(BaseIntegration):
                         serial,
                         "set_away",
                         True,
+                    )
+
+            elif command == "eco_switch":
+                if payload.upper() in ("ON", "OFF"):
+                    await execute_command(
+                        self._state_service,
+                        self._subscription_manager,
+                        serial,
+                        "set_away",
+                        payload.upper() == "ON",
                     )
 
             elif command == "fan_duration":
@@ -605,6 +616,13 @@ class MqttIntegration(BaseIntegration):
         await client.publish(
             f"{prefix}/{serial}/ha/preset",
             preset,
+            retain=True,
+        )
+
+        # Eco switch: on whenever the preset is eco or away
+        await client.publish(
+            f"{prefix}/{serial}/ha/eco_switch",
+            "OFF" if preset == HaPreset.HOME else "ON",
             retain=True,
         )
 
