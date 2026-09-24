@@ -49,7 +49,6 @@ from nolongerevil.integrations.mqtt.helpers import (
     ha_mode_to_nest,
     is_device_away,
     is_eco_active,
-    is_eco_mode_enabled,
     is_fan_running,
     nest_mode_to_ha,
 )
@@ -326,7 +325,8 @@ class MqttIntegration(BaseIntegration):
                         "set_away",
                         True,
                     )
-                elif payload.lower() == HaPreset.HOME:
+                # HA always offers a "none" preset; treat it as leaving Eco.
+                elif payload.lower() in (HaPreset.HOME, "none"):
                     await execute_command(
                         self._state_service,
                         self._subscription_manager,
@@ -344,14 +344,14 @@ class MqttIntegration(BaseIntegration):
                     )
 
             elif command == "eco_switch":
-                enable = payload.upper() == "ON"
-                await execute_command(
-                    self._state_service,
-                    self._subscription_manager,
-                    serial,
-                    "set_away",
-                    enable,
-                )
+                if payload.upper() in ("ON", "OFF"):
+                    await execute_command(
+                        self._state_service,
+                        self._subscription_manager,
+                        serial,
+                        "set_away",
+                        payload.upper() == "ON",
+                    )
 
             elif command == "fan_duration":
                 # Store the fan duration preference
@@ -645,11 +645,10 @@ class MqttIntegration(BaseIntegration):
             retain=True,
         )
 
-        # Eco switch state (HomeKit-exposable manual Eco session)
-        eco_enabled = is_eco_mode_enabled(device_values, structure_values)
+        # Eco switch: on whenever the preset is eco or away
         await client.publish(
             f"{prefix}/{serial}/ha/eco_switch",
-            "ON" if eco_enabled else "OFF",
+            "OFF" if preset == HaPreset.HOME else "ON",
             retain=True,
         )
 
